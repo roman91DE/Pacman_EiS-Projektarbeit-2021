@@ -1,0 +1,50 @@
+1.) Umsetzung des eigentlichen Spiels im Hintergrund
+..............
+
+Beim Programmieren des Spiels habe ich einen objektorientierten Ansatz verfolgt um dieses möglichst einfach stufenweise nachrüsten zu können.
+Die Kernelemente des Spiels bilden die 3 Klassen: Player, Alien und Map. Player und Alien enthalten dabei stets die aktuelle Koordinaten der jeweiligen Spielfigur
+sowie eine move Funktion (+ mehrere move-Unterfunktionen) um sich auf dem Spielfeld zu bewegen. Da es verschiedene Unterarten von Aliens geben soll 
+(eigentlich sind es ja Geister aber das ist mir zuspät aufgefallen...), habe ich eine abstrakte Basis Klasse Alien angelegt, die als Interface für alle Unterklassen benutzt wird. Die Basisklasse stellt alle Grundfunktionen 
+für die Bewegung und get Methoden sowie einen Konstruktor bereit und steuert die Bewegungshäufigkeit für unterschiedliche Schwierigkeitsstufen. Um verschiedenartige Bewegungsmuster 
+zwischen dummen und schlauen Aliens zu erreichen habe ich eine virtuelle Methode getDirection() verwendet. Diese ermittelt die Richtung für den nächsten Zug 
+über einen dynamischen Dispatch individuell für die beiden Alien Unterklassen um das gewünschte Verhalten für die Unterklassen zu erreichen (dumme Aliens per Zufall, 
+schlaue Aliens ermitteln den Abstand zum Spieler und wählen die Richtung, die die Distanz zum Spieler verkürzt). Die getDirection() Methode ermittelt 
+die Richtung für den nächsten Zug eines Aliens und gibt diese (als char kodiert) an die move Funktion der Basis Klasse.
+
+Die Map Klasse erhält im Konstruktor einen String mit dem Dateipfad einer .txt. Datei und liest diese anschließend per fstream ein um einen 
+std::vector aus chars zu erstellen. Über diesen Aufbau ist es dann einfach gewesen, das Feature zu implementieren, zusätzliche Karten über den Dateipfad einzulesen.
+Die zweite wichtige Funktion der map Klasse ist die isFree(x,y) Methode mit der geprüft wird, ob ein Koordinate innerhalb der Karte begehbar ist oder nicht.
+
+Alle 3 Klassen Player, Alien und Map werden abschließend in einer wrapper Klasse Game gebündelt um eine bessere Übersicht und Steuerung der einzelnen Bestandteile
+zu ermöglichen. Die Game Klasse ruft dafür in jeder Runde über die update() Funktion für allgemeine rundenbasierte Parameter des Spiels auf, die rundenbasierten Funktionen der Spielfiguren sowie die weitere Spiellogik wird von der gameWindow Klasse über die Game Klasse
+gesteuert, damit diese mit der onRefresh() Methode der Konsolenbibliothek synchron laufen. Zusätzlich werden Punkte und Zeit gezählt,
+geprüft ob der Spieler in einer Runde gestorben ist und ob das Level erfolgreich abgeschlossen wurde.
+
+Reflektion: Ich halte den Design Entwurf für gelungen, das nachträgliche Einbauen von Zusatzfeaturen (z.B. Schwierigkeit, andere Karten einlesen,
+SoundEffekte implementieren, Hauptmenü einbauen) war relativ problemlos und ohne allzugroßen großen Aufwand möglich nachdem das Grundgerüst des Spiels implementiert war. 
+
+
+2.) Visuelle Darstellung in virtueller Konsole/ GUI Hauptmenü
+..............
+
+Die Visualisierung des Spiels erfolgt über die bereitgestellte Konsolenbibliothek von der ich eine Subklasse gameWindow abgeleitet habe.
+Da die Bestandteile des Spiels in der Game Klasse bereits gebündelt sind, konnte ich diese einfach an die gameWindow Klasse (in Kombination mit einigen wenigen Zusatzparametern) weitergeben.
+Innerhalb der onRefresh() Methode wird dann rundenbasierten die Spielkarte gezeichnet und das Spiel mit der update()/move() Funktion aktualisieren. 
+Die gameWindow Klasse kümmert sich zusätzlich um einige weitere Features, wie z.B. Soundeffekte, eine Abbruchfunktion des laufenden Spiels 
+(hier leider mit einem Bug der im Code näher beschrieben ist). Das Hauptmenü ist eine einfache Qt GUI die aus einem abgeleiteten QMainWindow besteht.
+Über Pushbuttons können Level ausgewählt werden, ein Dropdown Menü dient der Einstellung des Schwierigkeitsgrads und ein Text Feld kann verwendet werden um
+einen Pfad zu einer .txt Karte anzugeben, die dann ebenfalls über den Button CustomLevel geladen werden kann.
+
+Wenn aus dem Hauptmenü ein Level aufgerufen wird startet mainMmenu über seine eingebauten Slots ein gameWindow() mit der gewünschtn Karte und dem eingestellten Schwierigkeitsgrad,
+in dem anschließend Pacman gespielt werden kann. Wird das Spiel beendet (Abbruch, Gewinn oder Verlust) landet der Spieler wieder im Hauptmenü von wo aus er erneut ein Level starten kann.
+
+3.) Speichermanagement
+..............
+
+Ich habe mich beim Speichermanagement an der Qt Vorgehensweise orientiert, Qt Elemente werden über den this Pointer an ihre Parent Widgets
+gebunden und von diesen freigegeben. Bei Heapspeicher Allokation von nicht Qt Elementen, z.B.  Alien oder Map Objekte, verfolge ich den gleichen hierarchischen Ansatz:
+    - mainMenu Destruktor ruft gameWindow Destruktor auf
+    - gameWindow Destruktor ruft game Destruktor auf
+    - game Destruktor gibt anschließend wiederrum die Ressourcen für Player/Alien/Map frei
+Die richtige Funktionsweie meiner Vorgehensweise habe ich mit dem Valgrind Memcheck Tool in Qt überprüft.
+ 

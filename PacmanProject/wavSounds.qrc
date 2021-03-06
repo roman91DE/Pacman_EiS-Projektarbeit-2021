@@ -1,0 +1,7 @@
+<RCC>
+    <qresource prefix="/new/sounds">
+        <file>wav_sounds/cembalo-1.wav</file>
+        <file>wav_sounds/cembalo-2.wav</file>
+        <file>wav_sounds/cembalo-3.wav</file>
+    </qresource>
+</RCC>

@@ -1,0 +1,10 @@
+<RCC>
+    <qresource prefix="/new/prefix1">
+        <file>wav_sounds/cembalo-1.wav</file>
+        <file>wav_sounds/cembalo-2.wav</file>
+        <file>wav_sounds/cembalo-3.wav</file>
+        <file>wav_sounds/glass-water-1.wav</file>
+        <file>wav_sounds/gummy-cat-2.wav</file>
+        <file>wav_sounds/pipe.wav</file>
+    </qresource>
+</RCC>
